@@ -1,1 +1,1 @@
-$ENV:GOARCH="arm64"; $ENV:GOOS="linux"; go build -o bootstrap main.go; Compress-Archive -f bootstrap myFunction.zip -Force
+$ENV:GOARCH="arm64"; $ENV:GOOS="linux"; go build -o bootstrap main.go; Compress-Archive bootstrap myFunction.zip -Force

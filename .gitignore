@@ -3,6 +3,11 @@
 # Learn more about .gitignore:
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
+# Ignore a file without extension
+*
+!*/
+!*.*
+
 # Node artifact files
 node_modules/
 dist/
@@ -48,3 +53,6 @@ Thumbs.db
 *.mov
 *.wmv
 
+# Zip files
+*.zip
+*.rar
