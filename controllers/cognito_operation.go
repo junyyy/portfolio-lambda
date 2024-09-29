@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"portfolio/v2/services"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -38,7 +39,7 @@ func SignIn(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events
 	if parseErr := json.Unmarshal([]byte(request.Body), &reqBody); parseErr != nil {
 		return GetBadResponse(parseErr), parseErr
 	}
-	cognito, err := services.GetCognitoActions()
+	cognito, err := services.GetCognitoConfig()
 	if err != nil {
 		return GetBadResponse(err), err
 	}
@@ -67,7 +68,7 @@ func RefreshToken(ctx context.Context, request events.APIGatewayV2HTTPRequest) (
 	if parseErr := json.Unmarshal([]byte(request.Body), &reqBody); parseErr != nil {
 		return GetBadResponse(parseErr), parseErr
 	}
-	cognito, err := services.GetCognitoActions()
+	cognito, err := services.GetCognitoConfig()
 	if err != nil {
 		return GetBadResponse(err), err
 	}
@@ -96,7 +97,7 @@ func RevokeToken(ctx context.Context, request events.APIGatewayV2HTTPRequest) (e
 	if paresErr := json.Unmarshal([]byte(request.Body), &reqBody); paresErr != nil {
 		return GetBadResponse(paresErr), paresErr
 	}
-	cognito, err := services.GetCognitoActions()
+	cognito, err := services.GetCognitoConfig()
 	if err != nil {
 		return GetBadResponse(err), err
 	}
@@ -120,7 +121,7 @@ func ConfirmForgotPassword(ctx context.Context, request events.APIGatewayV2HTTPR
 	if paresErr := json.Unmarshal([]byte(request.Body), &reqBody); paresErr != nil {
 		return GetBadResponse(paresErr), paresErr
 	}
-	cognito, err := services.GetCognitoActions()
+	cognito, err := services.GetCognitoConfig()
 	if err != nil {
 		return GetBadResponse(err), err
 	}
@@ -141,4 +142,25 @@ func ConfirmForgotPassword(ctx context.Context, request events.APIGatewayV2HTTPR
 	}
 
 	return GetOKResponse(string(bytes)), nil
+}
+
+func GlobalSignOut(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	accessToken, ok := request.Headers["Authorization"]
+	if !ok {
+		err := errors.New("missing auth header")
+		return GetBadResponse(err), err
+	}
+
+	cognito, err := services.GetCognitoConfig()
+	if err != nil {
+		return GetBadResponse(err), err
+	}
+
+	_, err = cognito.GlobalSignOut(ctx, accessToken)
+
+	if err != nil {
+		return GetBadResponse(err), err
+	}
+
+	return GetOKResponse("log out"), nil
 }

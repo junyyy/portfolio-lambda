@@ -15,11 +15,11 @@ type RouteKey struct {
 
 type Routes map[RouteKey]func(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error)
 
-// Handler  func(ctx context.Context, request events.APIGatewayV2HTTPRequest)
 func GetRoutes() Routes {
 	return Routes{
 		{"POST", "/auth/v1/login"}:   controllers.SignIn,
-		{"POST", "/auth/v1/refresh"}: controllers.RefreshToken,
-		{"POST", "/auth/v1/revoke"}:  controllers.RevokeToken,
+		{"POST", "/user/v1/refresh"}: controllers.RefreshToken,
+		{"POST", "/user/v1/revoke"}:  controllers.RevokeToken,
+		{"GET", "/user/v1/logout"}:   controllers.GlobalSignOut,
 	}
 }

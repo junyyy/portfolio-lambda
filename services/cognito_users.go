@@ -11,20 +11,20 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
+	cp "github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider/types"
 )
 
-type CognitoActions struct {
-	CognitoClient   *cognitoidentityprovider.Client
+type CognitoConfig struct {
+	CognitoClient   *cp.Client
 	ClientId        string
 	ClientSecretKey string
 }
 
-func (c CognitoActions) SignIn(ctx context.Context, username string, password string, secretHash string) (*types.AuthenticationResultType, error) {
+func (c CognitoConfig) SignIn(ctx context.Context, username string, password string, secretHash string) (*types.AuthenticationResultType, error) {
 	var authResult *types.AuthenticationResultType
 
-	output, err := c.CognitoClient.InitiateAuth(ctx, &cognitoidentityprovider.InitiateAuthInput{
+	output, err := c.CognitoClient.InitiateAuth(ctx, &cp.InitiateAuthInput{
 		AuthFlow: "USER_PASSWORD_AUTH",
 		ClientId: aws.String(c.ClientId),
 		AuthParameters: map[string]string{
@@ -46,8 +46,8 @@ func (c CognitoActions) SignIn(ctx context.Context, username string, password st
 	return authResult, err
 }
 
-func (c CognitoActions) RefreshToken(ctx context.Context, refreshToken string, secretHash string) (*types.AuthenticationResultType, error) {
-	output, err := c.CognitoClient.InitiateAuth(ctx, &cognitoidentityprovider.InitiateAuthInput{
+func (c CognitoConfig) RefreshToken(ctx context.Context, refreshToken string, secretHash string) (*types.AuthenticationResultType, error) {
+	output, err := c.CognitoClient.InitiateAuth(ctx, &cp.InitiateAuthInput{
 		AuthFlow: "REFRESH_TOKEN_AUTH",
 		ClientId: aws.String(c.ClientId),
 		AuthParameters: map[string]string{
@@ -63,18 +63,12 @@ func (c CognitoActions) RefreshToken(ctx context.Context, refreshToken string, s
 	}
 }
 
-func (c CognitoActions) RevokeToken(ctx context.Context, token string) (*cognitoidentityprovider.RevokeTokenOutput, error) {
-	output, err := c.CognitoClient.RevokeToken(ctx, &cognitoidentityprovider.RevokeTokenInput{
-		ClientId:     &c.ClientId,
-		ClientSecret: &c.ClientSecretKey,
-		Token:        &token,
-	})
-
-	return output, err
+func (c CognitoConfig) GlobalSignOut(ctx context.Context, token string) (*cp.GlobalSignOutOutput, error) {
+	return c.CognitoClient.GlobalSignOut(ctx, &cp.GlobalSignOutInput{AccessToken: aws.String(token)})
 }
 
-func (c CognitoActions) ConfirmForgotPassword(ctx context.Context, username string, password string, code string, secretHash string) (*cognitoidentityprovider.ConfirmForgotPasswordOutput, error) {
-	output, err := c.CognitoClient.ConfirmForgotPassword(ctx, &cognitoidentityprovider.ConfirmForgotPasswordInput{
+func (c CognitoConfig) ConfirmForgotPassword(ctx context.Context, username string, password string, code string, secretHash string) (*cp.ConfirmForgotPasswordOutput, error) {
+	output, err := c.CognitoClient.ConfirmForgotPassword(ctx, &cp.ConfirmForgotPasswordInput{
 		ClientId:         &c.ClientId,
 		ConfirmationCode: &code,
 		Username:         &username,
@@ -85,7 +79,17 @@ func (c CognitoActions) ConfirmForgotPassword(ctx context.Context, username stri
 	return output, err
 }
 
-func (c CognitoActions) CalcSecretHash(username string) (string, error) {
+func (c CognitoConfig) RevokeToken(ctx context.Context, token string) (*cp.RevokeTokenOutput, error) {
+	output, err := c.CognitoClient.RevokeToken(ctx, &cp.RevokeTokenInput{
+		ClientId:     &c.ClientId,
+		ClientSecret: &c.ClientSecretKey,
+		Token:        &token,
+	})
+
+	return output, err
+}
+
+func (c CognitoConfig) CalcSecretHash(username string) (string, error) {
 	input := fmt.Sprintf("%s%s", username, c.ClientId)
 	key := []byte(c.ClientSecretKey)
 
@@ -103,13 +107,13 @@ func (c CognitoActions) CalcSecretHash(username string) (string, error) {
 	return encoded, nil
 }
 
-func GetCognitoActions() (*CognitoActions, error) {
+func GetCognitoConfig() (*CognitoConfig, error) {
 	region, regionOk := os.LookupEnv("REGION")
 	clientID, clientIDOk := os.LookupEnv("COGNITO_CLIENT_ID")
 
 	if regionOk && clientIDOk {
-		cognito := CognitoActions{
-			CognitoClient: cognitoidentityprovider.NewFromConfig(aws.Config{
+		cognito := CognitoConfig{
+			CognitoClient: cp.NewFromConfig(aws.Config{
 				Region: region,
 			}),
 			ClientId: clientID,

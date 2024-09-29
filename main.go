@@ -13,7 +13,6 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-// Register the Methods here
 func getHandler(request events.APIGatewayV2HTTPRequest, routesConfig routes.Routes) (func(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error), error) {
 	routeKeyStr := request.RouteKey
 	routeKeys := strings.Split(routeKeyStr, " ")
@@ -31,22 +30,23 @@ func getHandler(request events.APIGatewayV2HTTPRequest, routesConfig routes.Rout
 }
 
 func handleRequest(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	// auth are handled in api gateway
 	routesConfig := routes.GetRoutes()
 	handler, err := getHandler(request, routesConfig)
 	if err != nil {
 		log.Println(err.Error())
 		return controllers.GetNotFoundResponse(), nil
 	}
-	var response events.APIGatewayV2HTTPResponse
+	var resp events.APIGatewayV2HTTPResponse
 
-	response, err = handler(ctx, request)
+	resp, err = handler(ctx, request)
 	if err != nil {
 		log.Println(err.Error())
 	}
-	if response.Headers == nil {
-		response.Headers = make(map[string]string)
+	if resp.Headers == nil {
+		resp.Headers = make(map[string]string)
 	}
-	return response, nil
+	return resp, nil
 }
 
 func main() {
