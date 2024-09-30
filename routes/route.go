@@ -22,7 +22,7 @@ func GetRoutes() Routes {
 		// need bear auth header
 		{"POST", "/user/v1/refresh"}: controllers.RefreshToken,
 		{"POST", "/user/v1/revoke"}:  controllers.RevokeToken,
-		{"GET", "/user/v1/logout"}:   controllers.GlobalSignOut,
+		{"POST", "/user/v1/logout"}:  controllers.GlobalSignOut,
 
 		// s3
 		{"GET", "/s3/fetch"}:     controllers.GetS3Obj,

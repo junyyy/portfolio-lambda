@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"portfolio/v2/services"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 )
@@ -145,12 +146,19 @@ func ConfirmForgotPassword(ctx context.Context, request events.APIGatewayV2HTTPR
 }
 
 func GlobalSignOut(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
-	accessToken, ok := request.Headers["Authorization"]
+	header, ok := request.Headers["authorization"]
+
 	if !ok {
 		err := errors.New("missing auth header")
 		return GetBadResponse(err), err
 	}
-
+	slices := strings.Split(header, " ")
+	accessToken := ""
+	if len(slices) > 1 {
+		accessToken = slices[1]
+	} else {
+		accessToken = slices[0]
+	}
 	cognito, err := services.GetCognitoConfig()
 	if err != nil {
 		return GetBadResponse(err), err
@@ -162,5 +170,5 @@ func GlobalSignOut(ctx context.Context, request events.APIGatewayV2HTTPRequest) 
 		return GetBadResponse(err), err
 	}
 
-	return GetOKResponse("log out"), nil
+	return GetSimpleOkResponse(), nil
 }

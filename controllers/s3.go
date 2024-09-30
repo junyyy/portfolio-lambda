@@ -62,9 +62,10 @@ func GetS3Obj(ctx context.Context, request events.APIGatewayV2HTTPRequest) (even
 	}
 	pdfBase64 := base64.StdEncoding.EncodeToString(buf)
 	resp := GetOKResponse(pdfBase64)
+	resp.IsBase64Encoded = true
 	resp.Headers = map[string]string{
 		"Content-Type":        "application/pdf",
-		"Content-Disposition": fmt.Sprintf("attachment; filename=%s", fileName),
+		"Content-Disposition": fmt.Sprintf("inline; filename=%s", fileName),
 	}
 	return resp, nil
 }

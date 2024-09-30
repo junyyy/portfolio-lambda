@@ -20,6 +20,12 @@ func GetOKResponse(body string) events.APIGatewayV2HTTPResponse {
 	return response
 }
 
+func GetSimpleOkResponse() events.APIGatewayV2HTTPResponse {
+	var response events.APIGatewayV2HTTPResponse
+	response.StatusCode = http.StatusOK
+	return response
+}
+
 func GetNotFoundResponse() events.APIGatewayV2HTTPResponse {
 	var response events.APIGatewayV2HTTPResponse
 	response.Body = "not found"

@@ -55,7 +55,6 @@ func (c CognitoConfig) RefreshToken(ctx context.Context, refreshToken string, se
 			"SECRET_HASH":   secretHash,
 		},
 	})
-
 	if err != nil {
 		return nil, err
 	} else {
